@@ -1,5 +1,5 @@
 wget
-txt
 numpy
 pandas
 openpyxl
+boto3

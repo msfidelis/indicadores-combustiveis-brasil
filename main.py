@@ -4,8 +4,25 @@ import ssl
 import pandas as pd
 import numpy as np
 import json
+import boto3
 
 from datetime import datetime
+
+def UploadS3(filepath, key):
+    s3 = boto3.client("s3")
+    bucket_name = "economia-popular-delivery-content-indices"
+    s3.upload_file(
+        Filename=filepath,
+        Bucket=bucket_name,
+        Key=key,
+        ExtraArgs={
+            "ACL": "public-read",
+            "ServerSideEncryption": "AES256"
+        }
+    )
+
+
+    return True
 
 def CombustivelEstados():
     return True
@@ -98,6 +115,7 @@ def CombustivelBrasil():
 
     for index, row in df_brasil.iterrows():
         if row['produto'] == "ETANOL HIDRATADO":
+
             # Datetime Referencias
             df_brasil_consolidado.loc[str(row['referencia'])]['referencia'] = row["referencia"].strftime("%Y-%m")
             df_brasil_consolidado.loc[str(row['referencia'])]['ano'] = row["referencia"].strftime("%Y")
@@ -141,6 +159,10 @@ def CombustivelBrasil():
     df_brasil_consolidado.to_csv('data/combustiveis-brasil.csv', index=False)
     print("Arquivo salvo em data/combustiveis-brasil.csv")
 
+
+    UploadS3('data/combustiveis-brasil.csv', 'combustiveis/combustiveis-brasil.csv')
+
+
     now = datetime.now()
 
     result_json = df_brasil_consolidado.to_json(index=False, orient="table")
@@ -158,8 +180,9 @@ def CombustivelBrasil():
 
     print("Arquivo salvo em data/combustiveis-brasil.json")
 
-def Consolidate():
+    UploadS3('data/combustiveis-brasil.json', 'combustiveis/combustiveis-brasil.json')
 
+def Consolidate():
     CombustivelBrasil()
 
 
