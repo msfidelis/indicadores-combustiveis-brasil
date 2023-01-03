@@ -3,9 +3,12 @@ import wget
 import ssl
 import pandas as pd
 import numpy as np
+import json
 
-def Consolidate():
+def CombustivelEstados():
+    return True
 
+def CombustivelBrasil():
     # Mensal - Brasil
     df_mensal_2001_2012 = pd.read_excel("data/raw/mensal-brasil-2001-a-2012.xlsx", skiprows=11, header=1)
     df_mensal_2001_2012 = df_mensal_2001_2012.drop([
@@ -17,7 +20,7 @@ def Consolidate():
         "COEF DE VARIAÇÃO DISTRIBUIÇÃO"
     ], axis=1)
     df_mensal_2001_2012 = df_mensal_2001_2012.rename({
-        "MÊS": "periodo",
+        "MÊS": "referencia",
         "PRODUTO": "produto",
         "PRECO MÉDIO REVENDA": "preco_medio_revenda",
         "PRECO MÍNIMO REVENDA": "preco_minimo_revenda",
@@ -37,7 +40,7 @@ def Consolidate():
         "COEF DE VARIAÇÃO DISTRIBUIÇÃO"
     ], axis=1)
     df_mensal_2013_atual = df_mensal_2013_atual.rename({
-        "MÊS": "periodo",
+        "MÊS": "referencia",
         "PRODUTO": "produto",
         "PREÇO MÉDIO REVENDA": "preco_medio_revenda",
         "PREÇO MÍNIMO REVENDA": "preco_minimo_revenda",
@@ -48,10 +51,12 @@ def Consolidate():
     }, axis='columns')
 
     df_brasil = pd.concat([df_mensal_2001_2012, df_mensal_2013_atual], ignore_index=True)
-    print(df_brasil)
+    # print(df_brasil)
 
     df_brasil_columns = [
-        'periodo',
+        'referencia',
+        'ano',
+        'mes',
         'gasolina_comum_preco_revenda_avg',
         'gasolina_comum_preco_revenda_min',
         'gasolina_comum_preco_revenda_max',
@@ -64,67 +69,95 @@ def Consolidate():
         'oleo_diesel_preco_revenda_avg',
         'oleo_diesel_preco_revenda_min',
         'oleo_diesel_preco_revenda_max',
+        'oleo_diesel_s10_preco_revenda_avg',
+        'oleo_diesel_s10_preco_revenda_min',
+        'oleo_diesel_s10_preco_revenda_max',
+        'gas_cozinha_glp_preco_revenda_avg',
+        'gas_cozinha_glp_preco_revenda_min',
+        'gas_cozinha_glp_preco_revenda_max',
+        'gas_natural_veicular_gnv_preco_revenda_avg',
+        'gas_natural_veicular_gnv_preco_revenda_min',
+        'gas_natural_veicular_gnv_preco_revenda_max',        
     ]
 
     df_brasil_consolidado = pd.DataFrame(columns=df_brasil_columns)
 
     # Create Indexes
     for index, row in df_brasil.iterrows():
-        if str(row['periodo']) not in df_brasil_consolidado.index:
-            s = pd.Series(['consolidated'],index=[row["periodo"]])
+        if str(row['referencia']) not in df_brasil_consolidado.index:
+            s = pd.Series(['consolidated'],index=[row["referencia"]])
             df_brasil_consolidado = pd.concat([df_brasil_consolidado, s])
 
     # Drop Consolidated Index
     df_brasil_consolidado = df_brasil_consolidado.iloc[: , :-1]
 
-    print(df_brasil_consolidado)
-
+    print("Tabela de Frequencias dos Tipos de Combustíveis - Brasil")
     print(df_brasil.produto.value_counts())
 
     for index, row in df_brasil.iterrows():
         if row['produto'] == "ETANOL HIDRATADO":
-            df_brasil_consolidado.loc[str(row['periodo'])]['periodo'] = row["periodo"]
-            df_brasil_consolidado.loc[str(row['periodo'])]['etanol_hidratado_preco_revenda_avg'] = row["preco_medio_revenda"]
-            df_brasil_consolidado.loc[str(row['periodo'])]['etanol_hidratado_preco_revenda_min'] = row["preco_minimo_revenda"]
-            df_brasil_consolidado.loc[str(row['periodo'])]['etanol_hidratado_preco_revenda_max'] = row["preco_maximo_revenda"]
+            # Datetime Referencias
+            df_brasil_consolidado.loc[str(row['referencia'])]['referencia'] = row["referencia"].strftime("%Y-%m")
+            df_brasil_consolidado.loc[str(row['referencia'])]['ano'] = row["referencia"].strftime("%Y")
+            df_brasil_consolidado.loc[str(row['referencia'])]['mes'] = row["referencia"].strftime("%m")
+
+            df_brasil_consolidado.loc[str(row['referencia'])]['etanol_hidratado_preco_revenda_avg'] = row["preco_medio_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['etanol_hidratado_preco_revenda_min'] = row["preco_minimo_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['etanol_hidratado_preco_revenda_max'] = row["preco_maximo_revenda"]
 
         if row['produto'] == "GASOLINA COMUM":
-            df_brasil_consolidado.loc[str(row['periodo'])]['periodo'] = row["periodo"]
-            df_brasil_consolidado.loc[str(row['periodo'])]['gasolina_comum_preco_revenda_avg'] = row["preco_medio_revenda"]
-            df_brasil_consolidado.loc[str(row['periodo'])]['gasolina_comum_preco_revenda_min'] = row["preco_minimo_revenda"]
-            df_brasil_consolidado.loc[str(row['periodo'])]['gasolina_comum_preco_revenda_max'] = row["preco_maximo_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['gasolina_comum_preco_revenda_avg'] = row["preco_medio_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['gasolina_comum_preco_revenda_min'] = row["preco_minimo_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['gasolina_comum_preco_revenda_max'] = row["preco_maximo_revenda"]
 
         if row['produto'] == "GASOLINA ADITIVADA":
-            df_brasil_consolidado.loc[str(row['periodo'])]['periodo'] = row["periodo"]
-            df_brasil_consolidado.loc[str(row['periodo'])]['gasolina_aditivada_preco_revenda_avg'] = row["preco_medio_revenda"]
-            df_brasil_consolidado.loc[str(row['periodo'])]['gasolina_aditivada_preco_revenda_min'] = row["preco_minimo_revenda"]
-            df_brasil_consolidado.loc[str(row['periodo'])]['gasolina_aditivada_preco_revenda_max'] = row["preco_maximo_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['gasolina_aditivada_preco_revenda_avg'] = row["preco_medio_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['gasolina_aditivada_preco_revenda_min'] = row["preco_minimo_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['gasolina_aditivada_preco_revenda_max'] = row["preco_maximo_revenda"]
 
         if row['produto'] == "ÓLEO DIESEL" or row['produto'] == "OLEO DIESEL":
-            df_brasil_consolidado.loc[str(row['periodo'])]['periodo'] = row["periodo"]
-            df_brasil_consolidado.loc[str(row['periodo'])]['oleo_diesel_preco_revenda_avg'] = row["preco_medio_revenda"]
-            df_brasil_consolidado.loc[str(row['periodo'])]['oleo_diesel_preco_revenda_min'] = row["preco_minimo_revenda"]
-            df_brasil_consolidado.loc[str(row['periodo'])]['oleo_diesel_preco_revenda_max'] = row["preco_maximo_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['oleo_diesel_preco_revenda_avg'] = row["preco_medio_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['oleo_diesel_preco_revenda_min'] = row["preco_minimo_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['oleo_diesel_preco_revenda_max'] = row["preco_maximo_revenda"]
 
-        df_brasil_consolidado.to_csv('data/combustiveis-brasil.csv', index=False)
+        if row['produto'] == "ÓLEO DIESEL S10" or row['produto'] == "OLEO DIESEL S10":
+            df_brasil_consolidado.loc[str(row['referencia'])]['oleo_diesel_s10_preco_revenda_avg'] = row["preco_medio_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['oleo_diesel_s10_preco_revenda_min'] = row["preco_minimo_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['oleo_diesel_s10_preco_revenda_max'] = row["preco_maximo_revenda"]
 
+        if row['produto'] == "GLP":
+            df_brasil_consolidado.loc[str(row['referencia'])]['gas_cozinha_glp_preco_revenda_avg'] = row["preco_medio_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['gas_cozinha_glp_preco_revenda_min'] = row["preco_minimo_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['gas_cozinha_glp_preco_revenda_max'] = row["preco_maximo_revenda"]
 
-    print(df_brasil_consolidado)
-    # print("Creating indexes")
-    # for index, row in df_brasil.iterrows():
-
-    #     if str(row['periodo']) not in df_brasil_consolidado.index:
-    #         df = pd.DataFrame([str(row['periodo'])], columns=['periodo'])
-    #         df_brasil_consolidado.append(df)
-        #     print("Index não existe")
-        #     str(row['periodo'])
-        #     df_brasil_consolidado[str(row['periodo'])] = pd.Series()
-        
-        # if row['produto'] == "ETANOL HIDRATADO":
-        #     df_brasil_consolidado.loc[str(row['periodo'])]['etanol_hidratado_preco_revenda_avg'] = row['preco_medio_revenda']
+        if row['produto'] == "GNV":
+            df_brasil_consolidado.loc[str(row['referencia'])]['gas_natural_veicular_gnv_preco_revenda_avg'] = row["preco_medio_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['gas_natural_veicular_gnv_preco_revenda_min'] = row["preco_minimo_revenda"]
+            df_brasil_consolidado.loc[str(row['referencia'])]['gas_natural_veicular_gnv_preco_revenda_max'] = row["preco_maximo_revenda"]
 
 
-    print(df_brasil_consolidado)
+    df_brasil_consolidado.to_csv('data/combustiveis-brasil.csv', index=False)
+    print("Arquivo salvo em data/combustiveis-brasil.csv")
+
+    result_json = df_brasil_consolidado.to_json(index=False, orient="table")
+    parsed = json.loads(result_json)
+
+    json_data = {
+        "fonte": "https://www.gov.br/anp/", 
+        "unidade_medida": "R$",
+        "data_atualizacao": "",
+        "data": parsed['data']
+    }
+
+    with open("data/combustiveis-brasil.json", "w") as outfile:
+        json.dump(json_data, outfile)
+
+    print("Arquivo salvo em data/combustiveis-brasil.json")
+
+def Consolidate():
+
+    CombustivelBrasil()
+
 
 
     # # Mensal - Estados
@@ -138,7 +171,7 @@ def Consolidate():
     #     "COEF DE VARIAÇÃO DISTRIBUIÇÃO"
     # ], axis=1)
     # df_mensal_estados_2001_2012 = df_mensal_estados_2001_2012.rename({
-    #     "MÊS": "periodo",
+    #     "MÊS": "referencia",
     #     "PRODUTO": "produto",
     #     "REGIÃO": "regiao",
     #     "ESTADO": "estado",
@@ -160,7 +193,7 @@ def Consolidate():
     #     "COEF DE VARIAÇÃO DISTRIBUIÇÃO"
     # ], axis=1)
     # df_mensal_estados_2013_atual = df_mensal_estados_2013_atual.rename({
-    #     "MÊS": "periodo",
+    #     "MÊS": "referencia",
     #     "PRODUTO": "produto",
     #     "REGIÃO": "regiao",
     #     "ESTADO": "estado",
@@ -188,7 +221,7 @@ def Consolidate():
     #     "COEF DE VARIAÇÃO DISTRIBUIÇÃO"
     # ], axis=1)
     # df_mensal_regioes_2001_2012 = df_mensal_regioes_2001_2012.rename({
-    #     "MÊS": "periodo",
+    #     "MÊS": "referencia",
     #     "PRODUTO": "produto",
     #     "REGIÃO": "regiao",
     #     "PRECO MÉDIO REVENDA": "preco_medio_revenda",
@@ -211,7 +244,7 @@ def Consolidate():
     #     "COEF DE VARIAÇÃO DISTRIBUIÇÃO"
     # ], axis=1)
     # df_mensal_regioes_2013_atual = df_mensal_regioes_2013_atual.rename({
-    #     "MÊS": "periodo",
+    #     "MÊS": "referencia",
     #     "PRODUTO": "produto",
     #     "REGIÃO": "regiao",
     #     "PREÇO MÉDIO REVENDA": "preco_medio_revenda",
