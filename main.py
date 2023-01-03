@@ -4,6 +4,7 @@ import ssl
 import pandas as pd
 import numpy as np
 import json
+import datetime
 
 def CombustivelEstados():
     return True
@@ -139,13 +140,15 @@ def CombustivelBrasil():
     df_brasil_consolidado.to_csv('data/combustiveis-brasil.csv', index=False)
     print("Arquivo salvo em data/combustiveis-brasil.csv")
 
+    now = datetime.now()
+
     result_json = df_brasil_consolidado.to_json(index=False, orient="table")
     parsed = json.loads(result_json)
 
     json_data = {
         "fonte": "https://www.gov.br/anp/", 
         "unidade_medida": "R$",
-        "data_atualizacao": "",
+        "data_atualizacao": now.strftime("%m/%d/%Y, %H:%M:%S"),
         "data": parsed['data']
     }
 
