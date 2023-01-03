@@ -4,7 +4,8 @@ import ssl
 import pandas as pd
 import numpy as np
 import json
-import datetime
+
+from datetime import datetime
 
 def CombustivelEstados():
     return True
