@@ -313,7 +313,7 @@ def DownloadSources():
         DownloadFile(n, output)
 
 def main():
-    #DownloadSources()
+    DownloadSources()
     Consolidate()
 
 main()
