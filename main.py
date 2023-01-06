@@ -114,7 +114,8 @@ def CombustivelEstados():
 
     df_brasil_consolidado = pd.DataFrame(columns=df_estados_columns)
 
-
+    print(df_estados.produto.value_counts())
+    
     # Create Indexes
     for index, row in df_estados.iterrows():
         referencia = row['referencia']
@@ -133,8 +134,7 @@ def CombustivelEstados():
     print(df_brasil_consolidado.index)
 
     print("Tabela de Frequencias dos Tipos de Combustíveis - Brasil")
-    print(df_estados.produto.value_counts())
-
+    
     for index, row in df_estados.iterrows():
 
         referencia = row['referencia']
