@@ -7,6 +7,7 @@ import json
 import boto3
 
 from datetime import datetime
+from multiprocessing import Pool
 
 def UploadS3(filepath, key):
     s3 = boto3.client("s3")
@@ -551,111 +552,9 @@ def CombustivelBrasil():
     UploadS3('data/combustiveis-brasil.json', 'combustiveis/combustiveis-brasil.json')
 
 def Consolidate():
-    # CombustivelBrasil()
-    # CombustivelRegioes()
+    CombustivelBrasil()
+    CombustivelRegioes()
     CombustivelEstados()
-
-
-
-    # # Mensal - Estados
-    # df_mensal_estados_2001_2012 = pd.read_excel("data/raw/mensal-estados-2001-a-2012.xlsx", skiprows=11, header=1)
-    # df_mensal_estados_2001_2012 = df_mensal_estados_2001_2012.drop([
-    #     "NÚMERO DE POSTOS PESQUISADOS", 
-    #     "UNIDADE DE MEDIDA", 
-    #     "DESVIO PADRÃO REVENDA",
-    #     "COEF DE VARIAÇÃO REVENDA",
-    #     "DESVIO PADRÃO DISTRIBUIÇÃO",
-    #     "COEF DE VARIAÇÃO DISTRIBUIÇÃO"
-    # ], axis=1)
-    # df_mensal_estados_2001_2012 = df_mensal_estados_2001_2012.rename({
-    #     "MÊS": "referencia",
-    #     "PRODUTO": "produto",
-    #     "REGIÃO": "regiao",
-    #     "ESTADO": "estado",
-    #     "PRECO MÉDIO REVENDA": "preco_medio_revenda",
-    #     "PRECO MÍNIMO REVENDA": "preco_minimo_revenda",
-    #     "PRECO MÁXIMO REVENDA": "preco_maximo_revenda",
-    #     "PRECO MÉDIO DISTRIBUIÇÃO": "preco_medio_distribuicao",
-    #     "PRECO MÍNIMO DISTRIBUIÇÃO": "preco_minimo_distribuicao",
-    #     "PRECO MÁXIMO DISTRIBUIÇÃO": "preco_maximo_distribuicao"
-    # }, axis='columns')
-    
-    # df_mensal_estados_2013_atual = pd.read_excel("data/raw/mensal-estados-desde-jan2013.xlsx",  skiprows = 15, header=1)
-    # df_mensal_estados_2013_atual = df_mensal_estados_2013_atual.drop([
-    #     "NÚMERO DE POSTOS PESQUISADOS", 
-    #     "UNIDADE DE MEDIDA", 
-    #     "DESVIO PADRÃO REVENDA",
-    #     "COEF DE VARIAÇÃO REVENDA",
-    #     "DESVIO PADRÃO DISTRIBUIÇÃO",
-    #     "COEF DE VARIAÇÃO DISTRIBUIÇÃO"
-    # ], axis=1)
-    # df_mensal_estados_2013_atual = df_mensal_estados_2013_atual.rename({
-    #     "MÊS": "referencia",
-    #     "PRODUTO": "produto",
-    #     "REGIÃO": "regiao",
-    #     "ESTADO": "estado",
-    #     "PREÇO MÉDIO REVENDA": "preco_medio_revenda",
-    #     "PREÇO MÍNIMO REVENDA": "preco_minimo_revenda",
-    #     "PREÇO MÁXIMO REVENDA": "preco_maximo_revenda",
-    #     "PREÇO MÉDIO DISTRIBUIÇÃO": "preco_medio_distribuicao",
-    #     "PREÇO MÍNIMO DISTRIBUIÇÃO": "preco_minimo_distribuicao",
-    #     "PREÇO MÁXIMO DISTRIBUIÇÃO": "preco_maximo_distribuicao"
-    # }, axis='columns')
-
-    # df_estados = pd.concat([df_mensal_estados_2001_2012, df_mensal_estados_2013_atual], ignore_index=True)
-    # print(df_estados)
-
-
-
-    # # # Mensal - Regiões
-    # df_mensal_regioes_2001_2012 = pd.read_excel("data/raw/mensal-regioes-2001-a-2012.xlsx", skiprows=11, header = 1)
-    # df_mensal_regioes_2001_2012 = df_mensal_regioes_2001_2012.drop([
-    #     "NÚMERO DE POSTOS PESQUISADOS", 
-    #     "UNIDADE DE MEDIDA", 
-    #     "DESVIO PADRÃO REVENDA",
-    #     "COEF DE VARIAÇÃO REVENDA",
-    #     "DESVIO PADRÃO DISTRIBUIÇÃO",
-    #     "COEF DE VARIAÇÃO DISTRIBUIÇÃO"
-    # ], axis=1)
-    # df_mensal_regioes_2001_2012 = df_mensal_regioes_2001_2012.rename({
-    #     "MÊS": "referencia",
-    #     "PRODUTO": "produto",
-    #     "REGIÃO": "regiao",
-    #     "PRECO MÉDIO REVENDA": "preco_medio_revenda",
-    #     "PRECO MÍNIMO REVENDA": "preco_minimo_revenda",
-    #     "PRECO MÁXIMO REVENDA": "preco_maximo_revenda",
-    #     "PRECO MÉDIO DISTRIBUIÇÃO": "preco_medio_distribuicao",
-    #     "PRECO MÍNIMO DISTRIBUIÇÃO": "preco_minimo_distribuicao",
-    #     "PRECO MÁXIMO DISTRIBUIÇÃO": "preco_maximo_distribuicao"
-    # }, axis='columns')
-    # print(df_mensal_regioes_2001_2012)
-
-
-    # df_mensal_regioes_2013_atual = pd.read_excel("data/raw/mensal-regioes-desde-jan2013.xlsx", skiprows=15, header = 1)
-    # df_mensal_regioes_2013_atual = df_mensal_regioes_2013_atual.drop([
-    #     "NÚMERO DE POSTOS PESQUISADOS", 
-    #     "UNIDADE DE MEDIDA", 
-    #     "DESVIO PADRÃO REVENDA",
-    #     "COEF DE VARIAÇÃO REVENDA",
-    #     "DESVIO PADRÃO DISTRIBUIÇÃO",
-    #     "COEF DE VARIAÇÃO DISTRIBUIÇÃO"
-    # ], axis=1)
-    # df_mensal_regioes_2013_atual = df_mensal_regioes_2013_atual.rename({
-    #     "MÊS": "referencia",
-    #     "PRODUTO": "produto",
-    #     "REGIÃO": "regiao",
-    #     "PREÇO MÉDIO REVENDA": "preco_medio_revenda",
-    #     "PREÇO MÍNIMO REVENDA": "preco_minimo_revenda",
-    #     "PREÇO MÁXIMO REVENDA": "preco_maximo_revenda",
-    #     "PREÇO MÉDIO DISTRIBUIÇÃO": "preco_medio_distribuicao",
-    #     "PREÇO MÍNIMO DISTRIBUIÇÃO": "preco_minimo_distribuicao",
-    #     "PREÇO MÁXIMO DISTRIBUIÇÃO": "preco_maximo_distribuicao"
-    # }, axis='columns')
-    # print(df_mensal_regioes_2013_atual)
-
-    # df_regioes = pd.concat([df_mensal_regioes_2001_2012, df_mensal_regioes_2013_atual], ignore_index=True)
-    # print(df_regioes)
-
 
 
 def DownloadFile(url, output):
@@ -683,7 +582,7 @@ def DownloadSources():
         DownloadFile(n, output)
 
 def main():
-    # DownloadSources()
+    DownloadSources()
     Consolidate()
 
 main()
