@@ -8,12 +8,18 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1a
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
         with:
-          registry-type: public   
-          aws-region: us-east-1      
+          registry-type: public      
 
       - name: Docker Build
         run: docker build -t app:latest .
