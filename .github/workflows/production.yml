@@ -1,0 +1,27 @@
+name: 'Economia Popular -  Combustiveis'
+on:
+  push:
+  pull_request:
+    types: [ opened, reopened ]
+jobs:
+  build-docker-artifacts:
+    needs: [ unit-test ]
+    runs-on: ubuntu-latest
+    if: contains(github.ref, 'main')
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Docker Build
+        run: docker build -t app:latest .
+
+      - name: Docker Tag Latest
+        run: docker tag app:latest 181560427716.dkr.ecr.us-east-1.amazonaws.com/economia-popular/indices-combustiveis:latest
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public        
+
+      - name: Docker Push Latest
+        run: docker push 181560427716.dkr.ecr.us-east-1.amazonaws.com/economia-popular/indices-combustiveis:latest
