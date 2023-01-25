@@ -128,7 +128,6 @@ def CombustivelEstados():
         if index_temp not in df_brasil_consolidado.index:
             s = pd.Series(['consolidated'],index=[index_temp])
             df_brasil_consolidado = pd.concat([df_brasil_consolidado, s])
-            print(index)
 
     # Drop Consolidated Index
     df_brasil_consolidado = df_brasil_consolidado.iloc[: , :-1]
