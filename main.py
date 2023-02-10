@@ -6,6 +6,7 @@ import numpy as np
 import json
 import boto3
 import os
+from sys import exit
 
 from datetime import datetime
 from multiprocessing import Pool
@@ -583,7 +584,7 @@ def DownloadSources():
 def main():
 
     if (os.getenv('AWS_BATCH_JOB_ARRAY_INDEX') == '0'):
-        os.exit(0)
+        exit(0)
 
     DownloadSources()
     Consolidate()
